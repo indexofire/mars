@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+  {% block sidebar %}
+  <div class="span3">
+  <div style="margin-bottom:10px">
+    <a class="btn btn-danger" href="#AddTermModal" role="button" data-toggle="modal">{% trans "Add Term" %}</a>
+  </div>
+  <div class="bs-docs-sidebar">
+    <ul class="nav nav-list bs-docs-sidenav">
+      {% if terms %}
+      <li{% if not current_term.name %} class="active"{% endif %}>
+        <a href="{% url 'entrez-index' %}">{% trans "All terms" %}</a>
+      </li>
+      {% for term in terms %}
+      <li{% if current_term.name == term.name %} class="active"{% endif %}>
+        <a href="{{ term.get_absolute_url }}">
+          <span class="pop-term" data-toggle="tooltip" data-placement="right" data-original-title="{{ term.db }}">{{ term.name }}</span>
+        </a>
+        <div class="btn-group pull-right toolbar">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-chevron-right"></i></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">{% trans "Setup term" %}</a></li>
+            <li><a href="#">{% trans "Remove term" %}</a></li>
+          </ul>
+        </div>
+      </li>
+      {% endfor %}
+      {% else %}
+      <li>{% trans "No terms yet!" %}</li>
+      {% endif %}
+    </ul>
+
+    <div id="AddTermModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-title">
+        <button type="button" class="close" style="padding: 10px" data-dismiss="modal" aria-hidden="true">CLOSE×</button>
+        <h3 class="title" id="myModalLabel">{% trans "Add Term" %}</h3>
+      </div>
+      <form class="form-horizontal" action="{% url 'entrez-add-term' %}" method="POST">{% csrf_token %}
+        {{ form.as_bootstrap }}
+        <div class="form-actions">
+          <button class="btn btn-primary" name="submit">{% trans "Submit" %}</button>
+          <button class="btn" data-dismiss="modal" aria-hidden="true">{% trans "Cancel" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<form class="form-search" action='search/'>
+  <input type="text" class="input-medium search-query">
+  <button type="submit" class="btn">{% trans "Search" %}</button>
+</form>
+
+{% if current_term %}
+    <div>
+<p>Search Condition: {{ current_term.term }}</p>
+<p>Database: {{ current_term.db }}</p>
+<p>Update: {{ current_term.period }} day</p>
+</div>
+{% endif %}
+  </div>
+  {% endblock sidebar %}
+
+  {% block entrez-content %}{% endblock entrez-content %}
+</div>
+
+<script>
+$('html').ajaxSend(function(event,xhr,settings){
+    function getCookie(name){
+        var cookieValue=null;
+        if(document.cookie && document.cookie!=''){
+            var cookies=document.cookie.split(';');
+            for(var i=0;i<cookies.length;i++){
+                var cookie=jQuery.trim(cookies[i]);
+                if(cookie.substring(0,name.length+1)==(name+'=')){
+                    cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    if(!(/^http:.*/.test(settings.url)||/^https:.*/.test(settings.url))){
+        xhr.setRequestHeader("X-CSRFToken",getCookie('csrftoken'));
+    }
+});
+
+$(function(){
+    $('.pop-term').tooltip('hide');
+    $('.mark-unread').click(function(){
+        var itemId = $(this).attr('data')
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'entrez-mark-as-unread' %}",
+            data: {
+                entrezentry_id: itemId,
+            },
+            dataType: "json",
+            success: function(data, textStatus, XMLHttpRequest){
+                $('#entry-heading-'+itemId).removeClass("read");
+            }
+        });
+    });
+});
+</script>
+{% endblock content %}

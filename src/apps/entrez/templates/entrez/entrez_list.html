@@ -1,0 +1,35 @@
+{% load i18n endless %}
+{% paginate objects %}
+
+<div class="entry-accordion" id="accordion">
+{% for obj in objects %}
+  <div class="entry-accordion-group"{% if forloop.last %}style="border-bottom:0px"{% endif %}>
+    <div class="entry-accordion-heading">
+      <a id="entry-heading-{{ obj.id }}" data="{{ obj.id }}" class="entry-accordion-toggle mark-read{% if not obj.read %} unread{% endif %}" data-toggle="collapse" data-parent="#accordion" href="#{{ obj.pk }}">
+        <nobr>{{ obj.title|title }}</nobr>
+      </a>
+    </div>
+    <div id="{{ obj.pk }}" class="entry-accordion-body collapse">
+      <div class="entry-accordion-inner">
+        <div class="entry-content">{{ obj.content_html|safe }}</div>
+        <div class="toolbar">
+          <a href="{{ obj.real_url }}" class="btn btn-info pull-right" target="blank">{% trans "NCBI Link" %}</a>
+          <!--<a href="#" class="btn favIt" data="{{ obj.id }}">Fav it</a>-->
+          <a href="#" class="btn mark-unread" data="{{ obj.id }}">Mark read it</a>
+          <a href="{% url 'entrez-entry-detail' obj.id %}" class="btn">{% trans "Read More" %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="entry-accordion-group">
+    <div class="entry-accordion-heading">
+      {% trans "no entry yet" %}
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+<div class="pages">
+  <div class="pagination">{% show_pages %}</div>
+</div>

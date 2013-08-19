@@ -1,0 +1,21 @@
+{% extends "entrez/entrez_base.html" %}
+{% load disqus_tags i18n %}
+
+{% if debug %}{% disqus_dev %}{% endif %}
+
+{% block entrez-content %}
+<div class="span9">
+  <h4>{{ entry.title }}</h4>
+  <div class="content">{{ entry.content_html|safe }}</div>
+  <div class="toolbar">
+    <a href="{{ term.real_url }}" class="btn btn-info pull-right" target="blank">
+      {% trans "NCBI Link" %}
+    </a>
+    <a href="#" class="btn btn-primary mark-unread" data="{{ term.id }}">
+      {% trans "Mark unread" %}
+    </a>
+  </div>
+  <p></p>
+  <div class="comment">{% disqus_show_comments %}</div>
+</div>
+{% endblock entrez-content %}
